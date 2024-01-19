@@ -1,0 +1,150 @@
+Migration of sample database
+==============================
+
+Installed developer version of sql server from Microsoft portal.
+Installed SSMS client locallly into our system.
+Logged in using local server name and windows authentication methodology.
+Open a new query for master database.
+Ran the instpubs.sql file which creates pubs database and tables,triggers, procedure, views and types inside the database.
+Then we ran the instnwnd.sql that creates few other tables ,indexes, views , store procedure, constraints and do populate tables with records.
+
+
+
+
+Methodology used - Toolkit(AWS DMS Schema Coversion tool - offline)
+
+
+1. Download AWS Schema conversion tool in local.
+2. Create a new AWS SCT project.
+3. Add a source database types as Microsoft Sql Server.
+4. Then provide the connection properties and connect to the database.
+5. Inside Main view choose the pubs schema.
+6. Choose the schemas node and load metadata for pubs schema.
+7. Now we save the SCT project and disconnect from source database engine.
+8. Now we need to navigate to mapping view under main view.
+9. We select the pub schema and target server types as Aurora Postgresql
+10. Then click on create mappin.
+11. Switched to main view and right click on schema to generate assessment report.
+12. Right click on schema and choose convert schema to convert the database to target database platform.
+13. Now target metadata tree will include the coverter pubs schema code.
+14. Now we need to edit the code based upon action items available on the project.
+15. Once done, do right click and choose convert schema to apply changes on target platform code.
+16. Once all the action items are fixed , right click on target platform pubs schema and choose Save as SQL to save the script file.
+17. Now bring up the RDS for Aurora postgresql from AWS console.
+18. Login to the instance via pgadmin 
+19. Execute the script file on target AWS Aurora postgresql database engine.
+
+
+
+Apsects to be considered
+
+1. In SQL Server partitions are created using partition functions and can be partitioned based on a column without a not null constraint. In that case all null values goes to left most partition. PostgreSQL doesn’t allow range partitions on null value based columns.
+
+2. In SQL server creation of primary key and unique key happens on table level. On the other hand in PostgreSQL we need to create keys on each partitions.
+
+3. SQL server allows us to create foreign key constraint from and to partitioned tables. PostgreSQL doesn’t allow to create foreign key constraint referenced to and from portioned tables.
+
+4. SQL Server allows to create indexes on table level for partitioned tables. PostgreSQL allows to create indexes on partition level for partitioned tables.
+
+5. PostgreSQL doesn’t support partitioned indexes.
+
+6. SQL server allows user to create indexes with same name on different table. In PostgreSQL index names should be unique across schema.
+
+7. In SQL Server we use GO TO statement to control the order of the execution of statement. In PostgreSQL uses BEGIN … END, LOOP … END LOOP.
+
+8. SQL Server supports the Merge statement. PostgreSQL earlier version 15 does not support Merge.
+
+9. PIVOT/UNPIVOT statements are allowed in SQL Server but not available with PostgreSQL.
+
+10. IIF statement from SQL Server is not supported with PostgreSQL.
+
+11 .Table-valued user defined functions implementation is different in SQL Server than that of PostgreSQL.
+
+12. TRY/CATCH block implementation is different in SQL Server than PostgreSQL.
+
+13. A System-Versioned/Temporal table available in SQL Server but not supported with PostgreSQL.
+
+14. CLR Store procedures are supported by SQL Server although not supported by PostgreSQL.
+
+15. SQL Server MD5 hash functions functionality doesn’t match with PostgreSQL MD5 hash function.
+
+
+
+Compatibility
+
+As of premigration client was using sqlserver version 16, keeping in mind we have choosen postgresql version 14 to make sure all the database objects gets compaitable to similar kind of object in target database.
+
+
+
+
+Migration Strategy
+=====================
+
+For migrating a database of size 10 TB with high volume of trasaction we need following strategy
+.
+Using logical replication, data pump or ETL methodology.
+
+Talend open studio can ease out the process of migration.
+
+Issues
+-------
+
+Code conversion errors
+Schema objects conversion errors
+Inbuilt functions incompatibility
+Jobs needs to be completed within 3 hrs
+
+
+Mitigations
+--------------
+
+Need strong developer team of 10-15 memebers to fix the code.
+Need to follow the parallelism approach to get the job completed in faster manner.
+
+
+Roadmap
+------------
+
+1. Assess the data and schema for compatibility.
+
+2. Set up the PostgreSQL environment.
+
+3. Choose a migration strategy like logical replication, data pump, or ETL.
+
+4. Test the migration process on a non-production environment.
+
+5. Synchronize the data using the chosen strategy.
+
+6. Update the application to connect to PostgreSQL.
+
+7. Validate the migration and perform post-migration tests.
+
+8. Plan for production database migration.
+
+9. Repeat the process for Prod environment
+
+10. Testing of production environment
+
+11. Plan for the cutover of production
+
+12. Functionality and sanity testing of database.
+
+13. Backout plan
+
+
+Factors
+---------
+
+1. Type of data
+2. Clients downtime hours
+3. Client budget
+4. Team size
+
+
+
+
+
+
+
+
+
